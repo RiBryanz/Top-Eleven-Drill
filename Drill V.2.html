@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Keterampilan &amp; Rekomendasi Drill</title>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --card-bg: #131b2e;
+            --panel-bg: #1a243d;
+            --accent: #00e5ff;
+            --accent-gold: #fbbf24;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --green: #10b981;
+            --red: #ef4444;
+            --border: #293855;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container { max-width: 1250px; margin: 0 auto; }
+
+        .header {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 { margin: 0; font-size: 24px; color: #fff; }
+        .header span { color: var(--accent); }
+
+        /* NAV TABS */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* CARDS & GRIDS */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .card-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .skills-3col {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 850px) {
+            .skills-3col { grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        .analyze-2col {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .analyze-2col { grid-template-columns: 1.3fr 1fr; }
+        }
+
+        /* INPUTS */
+        label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+        input, select {
+            width: 100%;
+            padding: 9px 10px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: #fff;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input:focus, select:focus { outline: none; border-color: var(--accent); }
+
+        /* SKILL COLUMNS (IN-GAME STYLE) */
+        .skill-col {
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .skill-col-header {
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 12px;
+            text-align: center;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .skill-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            background: rgba(9, 13, 22, 0.5);
+            border-left: 4px solid #475569;
+        }
+
+        .skill-row.key-skill {
+            background: rgba(16, 185, 129, 0.12);
+            border-left-color: var(--green);
+        }
+
+        .skill-row-name {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .key-badge {
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            background: var(--green);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .grey-badge {
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        .skill-row input {
+            width: 75px;
+            text-align: right;
+            padding: 5px 8px;
+        }
+
+        .col-avg {
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+            color: var(--accent-gold);
+        }
+
+        /* PRESET BUTTONS */
+        .preset-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-preset {
+            padding: 7px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--accent-gold);
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--accent-gold);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .btn-preset:hover { background: var(--accent-gold); color: #000; }
+
+        /* TABLE STYLING */
+        .table-wrapper { overflow-x: auto; }
+        .drill-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .drill-table th, .drill-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .drill-table th {
+            background: var(--bg-dark);
+            color: var(--accent);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .drill-table tr:hover { background: rgba(255,255,255,0.04); cursor: pointer; }
+        .drill-table tr.selected-row { background: rgba(0, 229, 255, 0.15); border-left: 4px solid var(--accent); }
+
+        .pill {
+            padding: 3px 7px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .pill-rec { background: rgba(16, 185, 129, 0.2); color: var(--green); border: 1px solid var(--green); }
+        .pill-mix { background: rgba(251, 191, 36, 0.2); color: var(--accent-gold); border: 1px solid var(--accent-gold); }
+        .pill-low { background: rgba(239, 68, 68, 0.2); color: var(--red); border: 1px solid var(--red); }
+
+        /* INSPECTOR BOX */
+        .step-box {
+            background: var(--bg-dark);
+            border-left: 3px solid var(--accent);
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .final-ovr-card {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border: 2px solid var(--accent);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .final-ovr-card .big-ovr {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 5px 0;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: var(--bg-dark);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .filter-btn.active {
+            background: var(--green);
+            color: #000;
+            border-color: var(--green);
+            font-weight: bold;
+        }
+
+        .cendol-warning {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--red);
+            color: #fca5a5;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Kalkulator <span>Keterampilan</span> &amp; Rekomendasi Drill</h1>
+        <small style="color: var(--text-muted);">15 indikator keterampilan, posisi pemain, Rule 180%, dan peringatan hemat cendol.</small>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('tab-main', this)">📊 Kalkulator Rule 180% & 15 Keterampilan</button>
+        <button class="tab-btn" onclick="openTab('tab-roadmap', this)">🗺️ Roadmap Drill Berurutan (Ebook Sanz)</button>
+        <button class="tab-btn" onclick="openTab('tab-quality', this)">🧬 Tes Kualitas Pemain (SA 50 Poin)</button>
+    </div>
+
+    <!-- ================= TAB 1: FULL INSTRUMENT RULE 180 ================= -->
+    <div id="tab-main" class="tab-content active">
+        
+        <!-- BAGIAN 1: PROFIL, POSISI & 15 KETERAMPILAN PEMAIN -->
+        <div class="card">
+            <div class="card-title">
+                <span>1. Profil Posisi & Papan 15 Indikator Keterampilan Pemain</span>
+                <div class="preset-group">
+                    <button class="btn-preset" onclick="loadPlayerPreset('hazard')">🔥 Eden Hazard (AMR/MR - OVR 119%)</button>
+                    <button class="btn-preset" onclick="loadPlayerPreset('albert')">⚡ Albert Fadli (MR/AMR - OVR 59%)</button>
+                </div>
+            </div>
+
+            <div class="profile-grid">
+                <div>
+                    <label>Nama Pemain:</label>
+                    <input type="text" id="pName" value="Albert Fadli" oninput="recalculateAll()">
+                </div>
+                <div>
+                    <label>Pilih Posisi Pemain:</label>
+                    <select id="pPos" onchange="recalculateAll()">
+                        <option value="AMR_AML">AMR / AML (Sayap Serang)</option>
+                        <option value="MR_ML" selected>MR / ML (Gelandang Sayap)</option>
+                        <option value="ST">ST (Striker / Penyerang)</option>
+                        <option value="AMC">AMC (Gelandang Serang)</option>
+                        <option value="MC">MC (Gelandang Tengah)</option>
+                        <option value="DMC">DMC (Gelandang Bertahan)</option>
+                        <option value="DC">DC (Bek Tengah)</option>
+                        <option value="DR_DL">DR / DL (Bek Sayap)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Umur Pemain:</label>
+                    <input type="number" id="pAge" value="18">
+                </div>
+                <div>
+                    <label>Mutu Awal Sebelum Dilatih (OVR %):</label>
+                    <input type="number" id="pOvr" value="59" oninput="recalculateAll()">
+                    <small id="autoOvrHint" style="font-size:11px; color:var(--accent);"></small>
+                </div>
+            </div>
+
+            <!-- PAPAN 15 KETERAMPILAN IN-GAME TOP ELEVEN -->
+            <div class="skills-3col">
+                <div class="skill-col">
+                    <div class="skill-col-header">🛡️ BERTAHAN</div>
+                    <div id="colDefense"></div>
+                    <div class="col-avg" id="avgDefense">RATA-RATA: 0%</div>
+                </div>
+
+                <div class="skill-col">
+                    <div class="skill-col-header">⚔️ MENYERANG</div>
+                    <div id="colAttack"></div>
+                    <div class="col-avg" id="avgAttack">RATA-RATA: 0%</div>
+                </div>
+
+                <div class="skill-col">
+                    <div class="skill-col-header">⚡ FISIK & MENTAL</div>
+                    <div id="colPhysical"></div>
+                    <div class="col-avg" id="avgPhysical">RATA-RATA: 0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BAGIAN 2: REKOMENDASI DRILL & BEDAH RUMUS -->
+        <div class="analyze-2col">
+            
+            <div class="card">
+                <div class="card-title">
+                    <span>2. Rekomendasi Drill Sesuai Posisi & Max Potensi OVR (Fokus 1 Drill)</span>
+                </div>
+
+                <div class="filter-bar">
+                    <button class="filter-btn active" onclick="setDrillFilter('recommended', this)">⭐ Saran Terbaik Untuk Posisi Ini</button>
+                    <button class="filter-btn" onclick="setDrillFilter('all', this)">📋 Tampilkan Semua Drill (20 Drill)</button>
+                </div>
+
+                <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+                    *Klik pada salah satu baris drill untuk melihat <strong>Bedah Rumus Rule 180%</strong> di sebelah kanan.
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="drill-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Drill Latihan</th>
+                                <th>Kesesuaian Posisi</th>
+                                <th>Cap (N×180)</th>
+                                <th>Total Saat Ini</th>
+                                <th>Potensi Gain</th>
+                                <th>MAX OVR Akhir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drillTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PANEL BEDAH RUMUS FOKUS 1 DRILL -->
+            <div class="card">
+                <div class="card-title">
+                    <span>3. Bedah Rumus Rule 180% (6 Slot Full Drill)</span>
+                </div>
+
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Pilih Drill Yang Dianalisis:</label>
+                    <select id="selectedDrillDropdown" onchange="selectDrillFromDropdown(this.value)"></select>
+                </div>
+
+                <div id="inspectorContent"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= TAB 2: ROADMAP DRILL BERURUTAN ================= -->
+    <div id="tab-roadmap" class="tab-content">
+        <div class="card">
+            <div class="card-title"><span>Panduan Latihan Berurutan (Sequential Training) Per Posisi - Ebook Sanz</span></div>
+            <p style="font-size:13px; color:var(--text-muted);">
+                <strong>Konsep Utama Bang Sans:</strong> Latihan dilakukan <strong>satu per satu (tidak dicampur)</strong>. Isi 6 slot dengan Drill #1 sampai mentok (0% gain), lalu ganti 6 slot ke Drill #2, dan seterusnya agar <strong>Hemat Cendol (Green Booster)</strong>.
+            </p>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:15px; margin-top:15px;">
+                <div class="step-box">
+                    <strong style="color:var(--accent);">1. Penyerang / Striker (ST / AMC):</strong><br><br>
+                    • <strong>Step 1:</strong> Serangan Balik Cepat (6 Slot)<br>
+                    • <strong>Step 2:</strong> Oper, Lari, Tembak! (6 Slot)<br>
+                    • <strong>Step 3:</strong> Penyelesaian 1-on-1 (6 Slot)<br>
+                    • <strong>Step 4:</strong> Teknik Menembak (6 Slot)
+                </div>
+                <div class="step-box">
+                    <strong style="color:var(--accent);">2. Winger & Gelandang Sayap (MR/ML/AML/AMR):</strong><br><br>
+                    • <strong>Step 1:</strong> Serangan Balik Cepat (6 Slot)<br>
+                    • <strong>Step 2:</strong> Serangan Sayap (6 Slot)<br>
+                    • <strong>Step 3:</strong> Dribel Slalom (6 Slot)<br>
+                    • <strong>Step 4:</strong> Cari Rekan (6 Slot)
+                </div>
+                <div class="step-box">
+                    <strong style="color:var(--accent);">3. Bek Tengah & Gelandang Bertahan (DC / DMC):</strong><br><br>
+                    • <strong>Step 1:</strong> Tekan Permainan / Pressing (6 Slot)<br>
+                    • <strong>Step 2:</strong> Hentikan Penyerang (6 Slot)<br>
+                    • <strong>Step 3:</strong> Pertahanan Umpan Silang (6 Slot)<br>
+                    • <strong>Step 4:</strong> Analisis Video (6 Slot)
+                </div>
+                <div class="step-box">
+                    <strong style="color:var(--accent);">4. Bek Sayap (DR / DL):</strong><br><br>
+                    • <strong>Step 1:</strong> Pertahanan Umpan Silang (6 Slot)<br>
+                    • <strong>Step 2:</strong> Hentikan Penyerang (6 Slot)<br>
+                    • <strong>Step 3:</strong> Dribel Slalom (6 Slot)<br>
+                    • <strong>Step 4:</strong> Cari Rekan (6 Slot)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= TAB 3: TES KUALITAS PEMAIN ================= -->
+    <div id="tab-quality" class="tab-content">
+        <div class="analyze-2col">
+            <div class="card">
+                <div class="card-title"><span>Simulator Tes Kualitas Pemain (Keahlian Khusus)</span></div>
+                <p style="font-size: 13px; color: var(--text-muted);">
+                    <strong>Langkah-langkah Cek Kualitas:</strong><br>
+                    1. Pasang Keahlian Khusus (SA) pada pemain (Target 50 Poin).<br>
+                    2. Latih menggunakan 6 Slot Drill <strong>Serangan Balik Cepat (Sangat Sulit)</strong> atau <strong>Gym</strong>.<br>
+                    3. Lakukan <strong>7 Sesi Latihan</strong> dan catat penambahan poin SA (+1 / +2 / +3):
+                </p>
+                <div style="display:flex; gap:10px; margin:15px 0;">
+                    <button class="tab-btn" style="flex:1; font-size:18px;" onclick="addQualitySeq('1')">+1 Poin</button>
+                    <button class="tab-btn" style="flex:1; font-size:18px;" onclick="addQualitySeq('2')">+2 Poin</button>
+                    <button class="tab-btn" style="flex:1; font-size:18px;" onclick="addQualitySeq('3')">+3 Poin</button>
+                    <button class="tab-btn" style="background:var(--red); color:#fff;" onclick="resetQualitySeq()">Reset</button>
+                </div>
+                <div class="step-box" style="text-align:center;">
+                    <div style="font-size:12px; color:var(--text-muted);">Deret Angka 7 Sesi Latihan:</div>
+                    <div id="qSeqDisplay" style="font-size:26px; font-weight:bold; color:var(--accent-gold); letter-spacing:3px; margin:8px 0;">-</div>
+                    <div id="qSeqVerdict" style="font-weight:bold; color:var(--accent);">Tekan tombol +1 / +2 / +3 di atas</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><span>Tabel 7 Tingkatan Kualitas Pemain (Sanz Top Eleven)</span></div>
+                <table class="drill-table">
+                    <thead>
+                        <tr>
+                            <th>Tingkat Kualitas</th>
+                            <th>Pola 7 Sesi</th>
+                            <th>Status Cendol (Booster)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1. Buruk</td><td style="font-family:monospace; color:var(--accent-gold);">1111111</td><td style="color:var(--red); font-weight:bold;">Sangat Boros ❌</td></tr>
+                        <tr><td>2. Jelek</td><td style="font-family:monospace; color:var(--accent-gold);">1112112</td><td style="color:var(--red);">Kurang Bagus ❌</td></tr>
+                        <tr><td>3. Normal</td><td style="font-family:monospace; color:var(--accent-gold);">1212121</td><td style="color:var(--green);">Bisa Dilatih ✅</td></tr>
+                        <tr><td>4. Bagus</td><td style="font-family:monospace; color:var(--accent-gold);">1221221</td><td style="color:var(--green);">Bagus ✅</td></tr>
+                        <tr><td>5. Hebat</td><td style="font-family:monospace; color:var(--accent-gold);">1222122</td><td style="color:var(--accent);">Hemat Cendol 🔥</td></tr>
+                        <tr><td>6. Luar Biasa</td><td style="font-family:monospace; color:var(--accent-gold);">1222222</td><td style="color:var(--accent);">Sangat Hemat 🔥</td></tr>
+                        <tr><td>7. Kelas Dunia</td><td style="font-family:monospace; color:var(--accent-gold);">2222223</td><td style="color:var(--accent-gold); font-weight:bold;">Fast Trainer Mutant 👑</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// DATA 15 KETERAMPILAN PEMAIN (DEFAULT ALBERT FADLI)
+let playerSkills = {
+    // Bertahan (5)
+    "Tekel": 49, "Penjagaan": 32, "Penempatan": 68, "Sundulan": 49, "Keberanian": 48,
+    // Menyerang (5)
+    "Umpan": 68, "Dribel": 65, "Umpan Silang": 65, "Tembakan": 77, "Penyelesaian": 53,
+    // Fisik & Mental (5)
+    "Kebugaran": 79, "Kekuatan": 44, "Agresivitas": 40, "Kecepatan": 78, "Kreativitas": 69
+};
+
+const skillCategories = {
+    defense: ["Tekel", "Penjagaan", "Penempatan", "Sundulan", "Keberanian"],
+    attack: ["Umpan", "Dribel", "Umpan Silang", "Tembakan", "Penyelesaian"],
+    physical: ["Kebugaran", "Kekuatan", "Agresivitas", "Kecepatan", "Kreativitas"]
+};
+
+// MAPPING ATRIBUT KUNCI (WHITE SKILLS) PER POSISI
+const positionKeySkills = {
+    "ST": ["Penempatan", "Sundulan", "Keberanian", "Umpan", "Dribel", "Tembakan", "Penyelesaian", "Kebugaran", "Kekuatan", "Kecepatan", "Kreativitas"],
+    "AMR_AML": ["Sundulan", "Umpan", "Dribel", "Umpan Silang", "Tembakan", "Penyelesaian", "Kebugaran", "Kecepatan", "Kreativitas"],
+    "MR_ML": ["Penempatan", "Umpan", "Dribel", "Umpan Silang", "Kebugaran", "Kecepatan", "Kreativitas"],
+    "AMC": ["Penempatan", "Sundulan", "Umpan", "Dribel", "Tembakan", "Penyelesaian", "Kebugaran", "Kecepatan", "Kreativitas"],
+    "MC": ["Tekel", "Penempatan", "Keberanian", "Umpan", "Dribel", "Tembakan", "Kebugaran", "Kecepatan", "Kreativitas"],
+    "DMC": ["Tekel", "Penjagaan", "Penempatan", "Keberanian", "Umpan", "Kebugaran", "Kekuatan", "Agresivitas", "Kreativitas"],
+    "DC": ["Tekel", "Penjagaan", "Penempatan", "Sundulan", "Keberanian", "Kebugaran", "Kekuatan", "Agresivitas"],
+    "DR_DL": ["Tekel", "Penjagaan", "Penempatan", "Keberanian", "Umpan", "Umpan Silang", "Kebugaran", "Kecepatan"]
+};
+
+// DATABASE LENGKAP 20 DRILL TOP ELEVEN
+const allDrills = [
+    { id: "serangan_balik", name: "Serangan Balik Cepat", diff: "Sangat Sulit", active: ["Kreativitas", "Umpan", "Penyelesaian", "Umpan Silang"], gkIgnored: ["Komunikasi"] },
+    { id: "oper_lari_tembak", name: "Oper, Lari, Tembak!", diff: "Mudah", active: ["Tembakan", "Kecepatan", "Umpan"], gkIgnored: ["Antisipasi"] },
+    { id: "penyelesaian_1on1", name: "Penyelesaian 1-lawan-1", diff: "Mudah", active: ["Dribel", "Penyelesaian"], gkIgnored: ["Serbuan"] },
+    { id: "latihan_keterampilan", name: "Latihan Keterampilan", diff: "Mudah", active: ["Dribel", "Sundulan", "Kreativitas"], gkIgnored: [] },
+    { id: "teknik_menembak", name: "Teknik Menembak", diff: "Sedang", active: ["Tembakan", "Penyelesaian"], gkIgnored: ["Tendangan"] },
+    { id: "dribel_slalom", name: "Dribel Slalom", diff: "Sulit", active: ["Umpan", "Dribel", "Kecepatan", "Kebugaran"], gkIgnored: [] },
+    { id: "serangan_sayap", name: "Serangan Sayap", diff: "Sulit", active: ["Umpan Silang", "Penyelesaian", "Sundulan", "Dribel"], gkIgnored: ["Jangkauan Udara"] },
+    { id: "cari_rekan", name: "Cari Rekan", diff: "Sedang", active: ["Umpan", "Umpan Silang", "Kreativitas"], gkIgnored: ["Lemparan"] },
+    { id: "lari_cepat", name: "Lari Cepat (Sprint)", diff: "Sedang", active: ["Kebugaran", "Kecepatan", "Dribel"], gkIgnored: ["Serbuan"] },
+    { id: "kebugaran_gym", name: "Kebugaran (Gym)", diff: "Sulit", active: ["Kebugaran", "Kekuatan"], gkIgnored: ["Tendangan"] },
+    { id: "peregangan", name: "Peregangan", diff: "Sangat Mudah", active: ["Kebugaran", "Kekuatan", "Kecepatan"], gkIgnored: ["Kelincahan"] },
+    { id: "lari_jarak_jauh", name: "Lari Jarak Jauh", diff: "Mudah", active: ["Kebugaran", "Kecepatan"], gkIgnored: ["Konsentrasi"] },
+    { id: "kontak_bola", name: "Kontak Bola", diff: "Sangat Mudah", active: ["Kekuatan", "Sundulan", "Dribel"], gkIgnored: ["Lemparan"] },
+    { id: "halang_rintang", name: "Lari Halang Rintang", diff: "Sulit", active: ["Kecepatan", "Agresivitas", "Keberanian", "Sundulan"], gkIgnored: [] },
+    { id: "analisis_video", name: "Analisis Video", diff: "Sangat Mudah", active: ["Penempatan", "Keberanian", "Kreativitas"], gkIgnored: ["Komunikasi"] },
+    { id: "gunakan_kepala", name: "Gunakan Kepala", diff: "Mudah", active: ["Sundulan", "Umpan", "Kreativitas", "Penempatan"], gkIgnored: [] },
+    { id: "pilih_operan", name: "Pilih Operan", diff: "Sedang", active: ["Tekel", "Umpan", "Penempatan", "Agresivitas"], gkIgnored: [] },
+    { id: "kucing_kucingan", name: "Kucing-kucingan", diff: "Sedang", active: ["Umpan", "Penjagaan", "Agresivitas", "Keberanian"], gkIgnored: ["Refleks"] },
+    { id: "pertahanan_silang", name: "Pertahanan Umpan Silang", diff: "Sulit", active: ["Penjagaan", "Sundulan", "Keberanian"], gkIgnored: ["Jangkauan Udara"] },
+    { id: "tekan_permainan", name: "Tekan Permainan", diff: "Sulit", active: ["Tekel", "Penjagaan", "Penempatan", "Keberanian", "Agresivitas"], gkIgnored: [] },
+    { id: "hentikan_penyerang", name: "Hentikan Penyerang", diff: "Sangat Sulit", active: ["Tekel", "Penjagaan", "Dribel", "Kekuatan", "Keberanian"], gkIgnored: ["Kelincahan"] }
+];
+
+let currentFilter = 'recommended';
+let currentSelectedDrillId = 'serangan_balik';
+
+window.onload = function() {
+    populateDrillDropdown();
+    renderSkillBoard();
+    recalculateAll();
+};
+
+function openTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
+
+function populateDrillDropdown() {
+    const sel = document.getElementById('selectedDrillDropdown');
+    sel.innerHTML = '';
+    allDrills.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.innerText = `${d.name} (${d.diff})`;
+        sel.appendChild(opt);
+    });
+    sel.value = currentSelectedDrillId;
+}
+
+function renderSkillBoard() {
+    const pos = document.getElementById('pPos').value;
+    const keySkills = positionKeySkills[pos] || [];
+
+    renderSkillColumn('colDefense', skillCategories.defense, keySkills);
+    renderSkillColumn('colAttack', skillCategories.attack, keySkills);
+    renderSkillColumn('colPhysical', skillCategories.physical, keySkills);
+}
+
+function renderSkillColumn(containerId, skillsArray, keySkills) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    skillsArray.forEach(skillName => {
+        const isKey = keySkills.includes(skillName);
+        const val = playerSkills[skillName];
+        const row = document.createElement('div');
+        row.className = `skill-row ${isKey ? 'key-skill' : ''}`;
+        row.innerHTML = `
+            <div class="skill-row-name">
+                <span>${skillName}</span>
+                <span class="${isKey ? 'key-badge' : 'grey-badge'}">${isKey ? 'KUNCI' : 'ABU'}</span>
+            </div>
+            <input type="number" value="${val}" oninput="updateSkillValue('${skillName}', this.value)">
+        `;
+        container.appendChild(row);
+    });
+}
+
+function updateSkillValue(skillName, val) {
+    playerSkills[skillName] = parseFloat(val) || 0;
+    const total15 = Object.values(playerSkills).reduce((a, b) => a + b, 0);
+    document.getElementById('pOvr').value = Math.round(total15 / 15);
+    recalculateAll(false);
+}
+
+function recalculateAll(reRenderBoard = true) {
+    if (reRenderBoard) renderSkillBoard();
+
+    const avgDef = skillCategories.defense.reduce((sum, s) => sum + playerSkills[s], 0) / 5;
+    const avgAtt = skillCategories.attack.reduce((sum, s) => sum + playerSkills[s], 0) / 5;
+    const avgPhy = skillCategories.physical.reduce((sum, s) => sum + playerSkills[s], 0) / 5;
+    const total15 = Object.values(playerSkills).reduce((a, b) => a + b, 0);
+
+    document.getElementById('avgDefense').innerText = `RATA-RATA: ${Math.round(avgDef)}% (${avgDef.toFixed(1)}%)`;
+    document.getElementById('avgAttack').innerText = `RATA-RATA: ${Math.round(avgAtt)}% (${avgAtt.toFixed(1)}%)`;
+    document.getElementById('avgPhysical').innerText = `RATA-RATA: ${Math.round(avgPhy)}% (${avgPhy.toFixed(1)}%)`;
+    document.getElementById('autoOvrHint').innerText = `Rata-rata 15 Keterampilan: ${(total15/15).toFixed(1)}%`;
+
+    const pos = document.getElementById('pPos').value;
+    const keySkills = positionKeySkills[pos] || [];
+    const initialOvr = parseFloat(document.getElementById('pOvr').value) || 0;
+
+    const evaluatedDrills = allDrills.map(drill => {
+        const N = drill.active.length;
+        const cap = N * 180;
+        let currentSum = 0;
+        let keyMatchCount = 0;
+
+        drill.active.forEach(s => {
+            currentSum += (playerSkills[s] || 0);
+            if (keySkills.includes(s)) keyMatchCount++;
+        });
+
+        const matchRatio = keyMatchCount / N;
+        const remainder = cap - currentSum;
+        const exactGain = remainder > 0 ? (remainder / 15) : 0;
+        const roundedGain = remainder > 0 ? Math.round(exactGain) : 0;
+        const maxOvrExact = initialOvr + exactGain;
+        const maxOvrRounded = initialOvr + roundedGain;
+
+        return {
+            ...drill,
+            N, cap, currentSum, remainder, keyMatchCount, matchRatio, exactGain, roundedGain, maxOvrExact, maxOvrRounded
+        };
+    });
+
+    renderDrillTable(evaluatedDrills, initialOvr);
+    const selectedEval = evaluatedDrills.find(d => d.id === currentSelectedDrillId) || evaluatedDrills[0];
+    renderDrillInspector(selectedEval, initialOvr);
+}
+
+function setDrillFilter(filterType, btn) {
+    currentFilter = filterType;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    recalculateAll(false);
+}
+
+function renderDrillTable(evaluatedDrills, initialOvr) {
+    const tbody = document.getElementById('drillTableBody');
+    tbody.innerHTML = '';
+
+    let list = [...evaluatedDrills];
+    if (currentFilter === 'recommended') {
+        list = list.filter(d => d.matchRatio >= 0.65);
+        list.sort((a, b) => (b.matchRatio - a.matchRatio) || (b.exactGain - a.exactGain));
+    }
+
+    list.forEach(d => {
+        const tr = document.createElement('tr');
+        if (d.id === currentSelectedDrillId) tr.className = 'selected-row';
+        tr.onclick = () => {
+            currentSelectedDrillId = d.id;
+            document.getElementById('selectedDrillDropdown').value = d.id;
+            recalculateAll(false);
+        };
+
+        const pctMatch = Math.round(d.matchRatio * 100);
+        let pillClass = pctMatch === 100 ? 'pill-rec' : (pctMatch >= 65 ? 'pill-mix' : 'pill-low');
+
+        const gainText = d.remainder > 0 
+            ? `<strong style="color:var(--green);">+${d.exactGain.toFixed(1)}%</strong> <small>(~${d.roundedGain}%)</small>`
+            : `<span style="color:var(--red);">Mentok (0%)</span>`;
+
+        const maxOvrText = d.remainder > 0
+            ? `<strong style="color:var(--accent); font-size:14px;">${d.maxOvrRounded}%</strong>`
+            : `<span style="color:var(--text-muted);">${initialOvr}%</span>`;
+
+        tr.innerHTML = `
+            <td>
+                <strong>${d.name}</strong><br>
+                <small style="color:var(--text-muted);">${d.active.join(', ')}</small>
+            </td>
+            <td><span class="pill ${pillClass}">${d.keyMatchCount}/${d.N} Kunci (${pctMatch}%)</span></td>
+            <td><strong>${d.cap}%</strong> <small>(${d.N}×180)</small></td>
+            <td>${d.currentSum}%</td>
+            <td>${gainText}</td>
+            <td>${maxOvrText}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function selectDrillFromDropdown(drillId) {
+    currentSelectedDrillId = drillId;
+    recalculateAll(false);
+}
+
+function renderDrillInspector(d, initialOvr) {
+    const pName = document.getElementById('pName').value || "Pemain";
+    const pos = document.getElementById('pPos').value;
+    const keySkills = positionKeySkills[pos] || [];
+    const container = document.getElementById('inspectorContent');
+
+    const skillBreakdownHtml = d.active.map((s, idx) => {
+        const val = playerSkills[s] || 0;
+        const isKey = keySkills.includes(s);
+        return `${idx + 1}. ${s}: <strong>${val}%</strong> <span class="${isKey ? 'key-badge' : 'grey-badge'}">${isKey ? 'Atribut Kunci' : 'Abu-abu'}</span>`;
+    }).join('<br>');
+
+    const gkNote = d.gkIgnored.length > 0 
+        ? `<div style="color:var(--red); font-size:11px; margin-top:4px;">*Atribut <strong>${d.gkIgnored.join(', ')}</strong> diabaikan karena merupakan atribut Penjaga Gawang (GK).</div>`
+        : '';
+
+    const cendolWarningHtml = d.remainder <= 0 
+        ? `<div class="cendol-warning">⚠️ PERINGATAN BANS SANS (HEMAT CENDOL): Drill ini sudah MENTOK (0% Gain). Menggunakan drill ini hanya akan MEMBUANG CENDOL (Booster Hijau) secara percuma!</div>`
+        : '';
+
+    container.innerHTML = `
+        <div class="step-box">
+            <strong>1. Kapasitas Cap Drill (${d.name}):</strong><br>
+            Terdapat <strong>${d.N}</strong> atribut aktif × 180% = <strong>${d.cap}%</strong>
+            ${gkNote}
+        </div>
+
+        <div class="step-box">
+            <strong>2. Total Atribut Pemain Terkait Saat Ini:</strong><br>
+            ${skillBreakdownHtml}<br>
+            <div style="margin-top:6px; border-top:1px dashed var(--border); padding-top:4px;">
+                Jumlah Total = <strong>${d.currentSum}%</strong>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <strong>3. Sisa Ruang Atribut:</strong><br>
+            ${d.cap}% - ${d.currentSum}% = <strong>${d.remainder}%</strong>
+        </div>
+
+        <div class="step-box">
+            <strong>4. Peningkatan Mutu (Divided by 15%):</strong><br>
+            ${d.remainder > 0 
+                ? `${d.remainder}% ÷ 15% = <strong>+${d.exactGain.toFixed(1)}%</strong> (Dibulatkan menjadi <strong>+${d.roundedGain}%</strong>)` 
+                : `Atribut sudah mencapai/melebihi batas ${d.cap}% (0% Gain)`}
+        </div>
+
+        <div class="final-ovr-card">
+            <div style="font-size:12px; color:var(--text-muted);">
+                Max OVR <strong>${pName}</strong> (Fokus 6 Slot Drill <em>${d.name}</em>):
+            </div>
+            <div class="big-ovr">
+                ${initialOvr}% ➔ ${d.remainder > 0 ? d.maxOvrRounded + '%' : initialOvr + '% (MENTOK)'}
+            </div>
+            <div style="font-size:12px; color:${d.remainder > 0 ? 'var(--green)' : 'var(--red)'};">
+                ${d.remainder > 0 
+                    ? `Mutu ${pName} masih bisa naik +${d.roundedGain}% (Presisi: ${d.maxOvrExact.toFixed(1)}%) sampai drill ini mentok.` 
+                    : `Drill ini sudah tidak efektif. Segera ganti ke drill berikutnya!` }
+            </div>
+        </div>
+        ${cendolWarningHtml}
+    `;
+}
+
+function loadPlayerPreset(presetName) {
+    if (presetName === 'hazard') {
+        document.getElementById('pName').value = "Eden Hazard";
+        document.getElementById('pPos').value = "AMR_AML";
+        document.getElementById('pAge').value = 19;
+        document.getElementById('pOvr').value = 119;
+
+        playerSkills = {
+            "Tekel": 49, "Penjagaan": 39, "Penempatan": 129, "Sundulan": 101, "Keberanian": 40,
+            "Umpan": 183, "Dribel": 201, "Umpan Silang": 200, "Tembakan": 151, "Penyelesaian": 167,
+            "Kebugaran": 117, "Kekuatan": 17, "Agresivitas": 10, "Kecepatan": 178, "Kreativitas": 204
+        };
+        currentSelectedDrillId = "oper_lari_tembak";
+        document.getElementById('selectedDrillDropdown').value = "oper_lari_tembak";
+        recalculateAll(true);
+
+    } else if (presetName === 'albert') {
+        document.getElementById('pName').value = "Albert Fadli";
+        document.getElementById('pPos').value = "MR_ML";
+        document.getElementById('pAge').value = 18;
+        document.getElementById('pOvr').value = 59;
+
+        playerSkills = {
+            "Tekel": 49, "Penjagaan": 32, "Penempatan": 68, "Sundulan": 49, "Keberanian": 48,
+            "Umpan": 68, "Dribel": 65, "Umpan Silang": 65, "Tembakan": 77, "Penyelesaian": 53,
+            "Kebugaran": 79, "Kekuatan": 44, "Agresivitas": 40, "Kecepatan": 78, "Kreativitas": 69
+        };
+        currentSelectedDrillId = "serangan_balik";
+        document.getElementById('selectedDrillDropdown').value = "serangan_balik";
+        recalculateAll(true);
+    }
+}
+
+// TES KUALITAS PEMAIN (SA TEST)
+let qSeq = "";
+function addQualitySeq(n) {
+    if (qSeq.length < 7) {
+        qSeq += n;
+        document.getElementById('qSeqDisplay').innerText = qSeq;
+        const v = document.getElementById('qSeqVerdict');
+        if (qSeq === "2222223") { v.innerText = "👑 Kualitas 7: KELAS DUNIA (Fast Trainer Extreme)"; v.style.color = "var(--accent-gold)"; }
+        else if (qSeq.startsWith("122222")) { v.innerText = "🔥 Kualitas 6: LUAR BIASA (Sangat Hemat Cendol)"; v.style.color = "var(--accent)"; }
+        else if (qSeq.startsWith("1222")) { v.innerText = "🔥 Kualitas 5: HEBAT (Fast Trainer)"; v.style.color = "var(--accent)"; }
+        else if (qSeq.startsWith("1221")) { v.innerText = "✅ Kualitas 4: BAGUS (Sangat Baik Dilatih)"; v.style.color = "var(--green)"; }
+        else if (qSeq.startsWith("1212")) { v.innerText = "✅ Kualitas 3: NORMAL (Bisa Dilatih)"; v.style.color = "var(--green)"; }
+        else if (qSeq.startsWith("1112")) { v.innerText = "⚠️ Kualitas 2: JELEK (Boros Cendol)"; v.style.color = "var(--red)"; }
+        else if (qSeq.startsWith("1111")) { v.innerText = "❌ Kualitas 1: BURUK (Sangat Boros Cendol)"; v.style.color = "var(--red)"; }
+        else { v.innerText = "Lanjutkan klik tombol..."; v.style.color = "var(--text-muted)"; }
+    }
+}
+
+function resetQualitySeq() {
+    qSeq = "";
+    document.getElementById('qSeqDisplay').innerText = "-";
+    document.getElementById('qSeqVerdict').innerText = "Tekan tombol +1 / +2 / +3 di atas";
+    document.getElementById('qSeqVerdict').style.color = "var(--accent)";
+}
+</script>
+
+</body>
+</html>
